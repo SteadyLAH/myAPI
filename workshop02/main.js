@@ -1,48 +1,4 @@
-const range = require('express-range')
-const compression = require('compression')
-
-const express = require('express')
-
-const CitiesDB = require('./citiesdb');
-
-//Load application keys
-//Rename _keys.json file to keys.json
-const keys = require('./keys.json')
-
-console.info(`Using ${keys.mongo}`);
-
-const db = CitiesDB({  
-	connectionUrl: keys.mongo, 
-	databaseName: 'zips', 
-	collectionName: 'city'
-});
-
-const app = express();
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Start of workshop
-
-// Mandatory workshop
-// TODO GET /api/states
-
-
-
-
-// TODO GET /api/state/:state
-
-
-
-
-// TODO GET /api/city/:cityId
-
-
-
-// TODO POST /api/city
-
-
-
+0 80;
 
 // Optional workshop
 // TODO HEAD /api/state/:state
