@@ -1,5 +1,14 @@
+const { join } = require('path');
+const fs = require('fs');
+
+const cors = require('cors');
 const range = require('express-range')
 const compression = require('compression')
+
+const { Validator, ValidationError } = require('express-json-validator-middleware')
+const  OpenAPIValidator  = require('express-openapi-validator').OpenApiValidator;
+
+const schemaValidator = new Validator({ allErrors: true, verbose: true });
 
 const express = require('express')
 
@@ -11,6 +20,8 @@ const keys = require('./keys.json')
 
 console.info(`Using ${keys.mongo}`);
 
+// TODO change your databaseName and collectioName 
+// if they are not the defaults below
 const db = CitiesDB({  
 	connectionUrl: keys.mongo, 
 	databaseName: 'cities', 
@@ -19,13 +30,17 @@ const db = CitiesDB({
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Start of workshop
+// TODO 1/2 Load schemans
 
-// Mandatory workshop
-// TODO GET /api/states
+
+
+
+// Start of workshop
+// TODO 2/2 Copy your routes from workshop02 here
 app.get('/api/states', 
     (req, resp) => {
         db.findAllStates()
@@ -116,8 +131,9 @@ app.get(
 
 //application/x-ww-form-urlcoded - body
 
-app.post{
+app.post(
     '/api/city',
+    //schemaValidator.validate({ body: citySchema }),
     (req, resp) => {
         const data = req.body;
         console.info('>> data: ', data);
@@ -133,26 +149,26 @@ app.post{
             resp.send(error);
         })
     }
-}
-
-
-
-// Optional workshop
-// TODO HEAD /api/state/:state
-// IMPORTANT: HEAD must be place before GET for the
-// same resource. Otherwise the GET handler will be invoked
-
-
-
-// TODO GET /state/:state/count
-
-
-
-// TODO GET /city/:name
-
-
+)
 
 // End of workshop
+
+app.use('/schema', express.static(join(__dirname, 'schema')));
+
+app.use((error, req, resp, next) => {
+	if (error instanceof ValidationError) {
+		console.error('Schema validation error: ', error)
+		return resp.status(400).type('application/json').json({ error: error });
+	}
+
+	else if (error.status) {
+		console.error('OpenAPI specification error: ', error)
+		return resp.status(400).type('application/json').json({ error: error });
+	}
+
+	console.error('Error: ', error);
+	resp.status(400).type('application/json').json({ error: error });
+});
 
 db.getDB()
 	.then((db) => {
